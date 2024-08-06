@@ -1,4 +1,4 @@
-use std::{fmt::Display, ops::Mul, str::FromStr};
+use std::{fmt::Display, str::FromStr};
 use crate::{Error, Result};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -28,28 +28,27 @@ impl ChunkType {
         self.code
     }
 
-    ## primer byte [bit 5]
     fn is_valid(&self) -> bool {
+        // primer byte [bit 5]
         let byte = self.code[0];
+
     }
+
     fn is_critical(&self) -> bool {
+        // primer byte [bit 5]
     }
 
-    ## segundo byte 
     fn is_public(&self) -> bool {
-        
+        // segundo byte 
     }
 
-    ## tercer byte 
     fn is_reserved_bit_valid(&self) -> bool {
-        
+        // tercer byte 
     }
 
-    ## cuarto byte
     fn is_safe_to_copy(&self) -> bool {
-        
+        // cuarto byte
     }
-
 }
 
 // Implementaciones de traits de datos primitivos
