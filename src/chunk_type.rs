@@ -1,19 +1,65 @@
-use std::{fmt::Display, str::FromStr};
+use std::{fmt::Display, ops::Mul, str::FromStr};
+use crate::{Error, Result};
 
-
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 struct ChunkType {
     code: [u8; 4],
 }
 
+#[derive(Debug)]
+enum ChunkTypeErrors {
+    IsNotAlphabetic,
+}
+
+impl std::error::Error for ChunkTypeErrors{}
+
+impl Display for ChunkTypeErrors {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ChunkTypeErrors::IsNotAlphabetic => write!(f, "El caracter no se encuentra dentro de los rangos ASCII permitidos: 65-90 o 97-122"),
+        }
+    }
+}
+
+
+impl ChunkType {
+
+    fn bytes(&self) -> [u8; 4] {
+        self.code
+    }
+
+    ## primer byte [bit 5]
+    fn is_valid(&self) -> bool {
+        let byte = self.code[0];
+    }
+    fn is_critical(&self) -> bool {
+    }
+
+    ## segundo byte 
+    fn is_public(&self) -> bool {
+        
+    }
+
+    ## tercer byte 
+    fn is_reserved_bit_valid(&self) -> bool {
+        
+    }
+
+    ## cuarto byte
+    fn is_safe_to_copy(&self) -> bool {
+        
+    }
+
+}
+
 // Implementaciones de traits de datos primitivos
 impl TryFrom<[u8; 4]> for ChunkType {
-    type Error = &'static str;
-
-    fn try_from(value: [u8; 4]) -> Result<Self, Self::Error> {
+    type Error = Error;
+    fn try_from(value: [u8; 4]) -> Result<Self> {
         for byte in value {
-            if !byte.is_ascii_alphabetic() {
-                return Err("Chunk invalido, debe representar un caracter alfabetico");
+            if !byte.is_ascii_alphabetic(){
+                let err: Error = ChunkTypeErrors::IsNotAlphabetic.into();
+                return Err(err);
             }
         }
         Ok(ChunkType {code: value})
@@ -21,20 +67,15 @@ impl TryFrom<[u8; 4]> for ChunkType {
 }
 
 impl FromStr for ChunkType {
-    type Err = &'static str;
+    type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self> {
         let s = s.as_bytes();
-        let s: [u8; 4] = match s[0..4].try_into() {
-            Ok(val) => val,
-            Err(_) => {
-                eprintln!("Se ingresaron {} bytes, cuando se esperaban 4", s.len());
-                return Err("Cantidad mayor a la admitida (bytes)")
-            },
-        };
+        let s: [u8; 4] = s[0..4].try_into()?;
         for byte in s {
-            if !byte.is_ascii_alphabetic() {
-                return Err("Chunk invalido, debe representar un caracter alfabetico");
+            if !byte.is_ascii_alphabetic(){
+                let err: Error = ChunkTypeErrors::IsNotAlphabetic.into();
+                return Err(err);
             }
         }
         Ok(ChunkType {code: s})
@@ -46,10 +87,6 @@ impl Display for ChunkType {
         write!(f, "{} {} {} {}", self.code[0], self.code[1], self.code[2], self.code[3])
     }
 }
-
-
-// Implementación de custom traits
-
 
 #[cfg(test)]
 mod tests {
