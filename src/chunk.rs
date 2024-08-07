@@ -1,11 +1,12 @@
 #![allow(unused_variables)]
-use std::{fmt::Display, io::Read};
+use std::{any::Any, fmt::Display, io::Read, ops::BitOrAssign};
 use crc::{Crc, CRC_32_ISO_HDLC};
 use crate::chunk_type::ChunkType;
 
 pub struct Chunk {
     chunk_type: ChunkType,
     chunk_data: Vec<u8>,
+    // convertir length a [u8]
     length: u32,
     crc: u32,
 }
@@ -32,11 +33,11 @@ impl Chunk {
     }
 
     pub fn chunk_type(&self) -> &ChunkType {
-        todo!()
+        &self.chunk_type
     }
 
     pub fn data(&self) -> &[u8] {
-        todo!()
+        self.chunk_data.as_slice()
     }
 
     pub fn crc(&self) -> u32 {
@@ -44,11 +45,23 @@ impl Chunk {
     }
 
     pub fn data_as_string(&self) -> Result<String, ()> {
-        todo!()
+        let data = self.data().bytes();
+        let mut string = String::new();
+        for byte in data {
+            let byte = match byte {
+                Ok(val) => val,
+                Err(_) => return Err(()),
+            };
+            string.push(byte as char);            
+        }
+        return Ok(string)
     }
 
     pub fn as_bytes(&self) -> Vec<u8> {
-        todo!()
+        let mut byte_vec = Vec::<u8>::new();
+        byte_vec.push(self.length as u8);
+        byte_vec.push(self.chunk_type.bytes()[..]);
+        return byte_vec
     }
 
     fn get_checksum(mut chunk_data: Vec<u8>, chunk_type_code: [u8; 4]) -> u32 {
