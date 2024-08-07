@@ -1,29 +1,34 @@
 #![allow(unused_variables)]
 use std::{fmt::Display, io::Read};
-use crc::Crc;
+use crc::{Crc, CRC_32_ISO_HDLC};
 use crate::chunk_type::ChunkType;
 
 pub struct Chunk {
-    chunk_type ChunkType,
+    chunk_type: ChunkType,
     chunk_data: Vec<u8>,
     length: u32,
     crc: u32,
 }
 
 impl Chunk {
+    const CRC: Crc<u32> = Crc::<u32>::new(&CRC_32_ISO_HDLC);
+
     pub fn new(chunk_type: ChunkType, chunk_data: Vec<u8>) -> Chunk {
-        let length = chunk_data.bytes().count();
-        let length: u32 = length.try_into().unwrap();
+        let length: u32 = chunk_data.bytes()
+                                    .count()
+                                    .try_into()
+                                    .unwrap();
+        let crc_sum = Chunk::get_checksum(chunk_data.clone(), chunk_type.bytes());
         Chunk {
             chunk_type,
             chunk_data,
             length,
-            crc: todo!(),
+            crc: crc_sum,
         }
     }
 
     pub fn length(&self) -> u32 {
-        todo!()
+        self.length
     }
 
     pub fn chunk_type(&self) -> &ChunkType {
@@ -35,7 +40,7 @@ impl Chunk {
     }
 
     pub fn crc(&self) -> u32 {
-        todo!()
+        self.crc
     }
 
     pub fn data_as_string(&self) -> Result<String, ()> {
@@ -46,6 +51,12 @@ impl Chunk {
         todo!()
     }
 
+    fn get_checksum(mut chunk_data: Vec<u8>, chunk_type_code: [u8; 4]) -> u32 {
+        chunk_data.extend_from_slice(&chunk_type_code);
+        let chunk_data = &chunk_data[..];
+        let sum = Chunk::CRC.checksum(chunk_data);
+        sum
+    }
 }
 
 // impl Display for Chunk {
