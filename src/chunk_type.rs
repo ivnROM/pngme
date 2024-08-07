@@ -1,8 +1,9 @@
-use std::{fmt::Display, str::FromStr};
+use std::fmt::Display;
+use std::str::FromStr;
 use crate::{Error, Result};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
-struct ChunkType {
+pub struct ChunkType {
     code: [u8; 4],
 }
 
@@ -24,30 +25,40 @@ impl Display for ChunkTypeErrors {
 
 impl ChunkType {
 
-    fn bytes(&self) -> [u8; 4] {
+    pub fn bytes(&self) -> [u8; 4] {
         self.code
     }
 
-    fn is_valid(&self) -> bool {
+    pub fn is_critical(&self) -> bool {
         // primer byte [bit 5]
         let byte = self.code[0];
-
+        let bit = (byte >> 5) & 1;
+        bit == 0
     }
 
-    fn is_critical(&self) -> bool {
-        // primer byte [bit 5]
-    }
-
-    fn is_public(&self) -> bool {
+    pub fn is_public(&self) -> bool {
         // segundo byte 
+        let byte = self.code[1];
+        let bit = (byte >> 5) & 1;
+        bit == 0
     }
 
-    fn is_reserved_bit_valid(&self) -> bool {
+    pub fn is_reserved_bit_valid(&self) -> bool {
         // tercer byte 
+        let byte = self.code[2];
+        let bit = (byte >> 5) & 1;
+        bit == 0
     }
 
-    fn is_safe_to_copy(&self) -> bool {
+    pub fn is_safe_to_copy(&self) -> bool {
         // cuarto byte
+        let byte = self.code[3];
+        let bit = (byte >> 5) & 1;
+        bit == 1
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.is_reserved_bit_valid()
     }
 }
 
@@ -67,7 +78,6 @@ impl TryFrom<[u8; 4]> for ChunkType {
 
 impl FromStr for ChunkType {
     type Err = Error;
-
     fn from_str(s: &str) -> Result<Self> {
         let s = s.as_bytes();
         let s: [u8; 4] = s[0..4].try_into()?;
@@ -83,7 +93,7 @@ impl FromStr for ChunkType {
 
 impl Display for ChunkType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {} {}", self.code[0], self.code[1], self.code[2], self.code[3])
+        write!(f, "{}{}{}{}", self.code[0] as char, self.code[1] as char, self.code[2] as char, self.code[3] as char)
     }
 }
 
