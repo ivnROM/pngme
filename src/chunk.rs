@@ -4,7 +4,7 @@ use crc::Crc;
 use crate::chunk_type::ChunkType;
 
 pub struct Chunk {
-    chunk_type: ChunkType,
+    chunk_type ChunkType,
     chunk_data: Vec<u8>,
     length: u32,
     crc: u32,
@@ -14,11 +14,11 @@ impl Chunk {
     pub fn new(chunk_type: ChunkType, chunk_data: Vec<u8>) -> Chunk {
         let length = chunk_data.bytes().count();
         let length: u32 = length.try_into().unwrap();
-        Chun {
+        Chunk {
             chunk_type,
             chunk_data,
             length,
-            
+            crc: todo!(),
         }
     }
 
