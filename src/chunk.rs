@@ -1,43 +1,48 @@
 #![allow(unused_variables)]
-use std::fmt::Display;
+use std::{fmt::Display, io::Read};
 use crc::Crc;
-
 use crate::chunk_type::ChunkType;
 
-
-struct Chunk {
-    length: u32,
+pub struct Chunk {
     chunk_type: ChunkType,
     chunk_data: Vec<u8>,
+    length: u32,
     crc: u32,
 }
 
 impl Chunk {
-    fn new(chunk_type: ChunkType, chunk_data: Vec<u8>) -> ChunkType {
+    pub fn new(chunk_type: ChunkType, chunk_data: Vec<u8>) -> Chunk {
+        let length = chunk_data.bytes().count();
+        let length: u32 = length.try_into().unwrap();
+        Chun {
+            chunk_type,
+            chunk_data,
+            length,
+            
+        }
+    }
+
+    pub fn length(&self) -> u32 {
         todo!()
     }
 
-    fn length(&self) -> u32 {
+    pub fn chunk_type(&self) -> &ChunkType {
         todo!()
     }
 
-    fn chunk_type(&self) -> &ChunkType {
+    pub fn data(&self) -> &[u8] {
         todo!()
     }
 
-    fn data(&self) -> &[u8] {
+    pub fn crc(&self) -> u32 {
         todo!()
     }
 
-    fn crc(&self) -> u32 {
+    pub fn data_as_string(&self) -> Result<String, ()> {
         todo!()
     }
 
-    fn data_as_string(&self) -> Result<String, ()> {
-        todo!()
-    }
-
-    fn as_bytes(&self) -> Vec<u8> {
+    pub fn as_bytes(&self) -> Vec<u8> {
         todo!()
     }
 
