@@ -4,21 +4,22 @@ use crc::{Crc, CRC_32_ISO_HDLC};
 use crate::chunk_type::ChunkType;
 use crate::{Error, Result};
 
+#[derive(Debug)]
 enum ChunkError {
+    ConversionError,
     UnreadableByte,
 }
 
 // implementar esto
-impl std::error::Error for ChunkError{
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
+impl std::error::Error for ChunkError{}
 
-    fn cause(&self) -> Option<&dyn std::error::Error> {
-        self.source()
+impl Display for ChunkError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ChunkError::UnreadableByte => write!(f, "Error leyendo los bytes del contenido"),
+            ChunkError::ConversionError => write!(f, "Error haciendo la conversión de un array de bytes al chunk"),
+        }
     }
-
-    fn provide<'a>(&'a self, request: &mut std::error::Request<'a>) {}
 }
 
 pub struct Chunk {
@@ -64,7 +65,10 @@ impl Chunk {
         for byte in data {
             let byte = match byte {
                 Ok(val) => val,
-                Err(_) => return Err(),
+                Err(_) => {
+                    let err = ChunkError::UnreadableByte.into();
+                    return Err(err)
+                },
             };
             string.push(byte as char);            
         }
@@ -92,10 +96,23 @@ impl Chunk {
     }
 }
 
-// impl Display for Chunk {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//     }
-// }
+// Length (4 bytes, u32) -> ChunkCode (4 bytes) -> ChunkData (N bytes, Vec<u8>) -> CRC (4 bytes, u32)
+impl TryFrom<&[u8]> for Chunk {
+    type Error = ChunkError;
+    fn try_from(value: &[u8]) -> Result<Chunk> {
+        let value = value.iter();
+        let err = ChunkError::ConversionError;
+        let len: u32 = u32::from_ne_bytes(
+            value.
+        );
+        
+    }
+}
+
+impl Display for Chunk {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    }
+}
 
 fn main() {
 #[cfg(test)]
