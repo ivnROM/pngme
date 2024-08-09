@@ -1,12 +1,29 @@
 #![allow(unused_variables)]
-use std::{any::Any, fmt::Display, io::Read, ops::BitOrAssign};
+use std::{fmt::Display, io::Read};
 use crc::{Crc, CRC_32_ISO_HDLC};
 use crate::chunk_type::ChunkType;
+use crate::{Error, Result};
+
+enum ChunkError {
+    UnreadableByte,
+}
+
+// implementar esto
+impl std::error::Error for ChunkError{
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+
+    fn cause(&self) -> Option<&dyn std::error::Error> {
+        self.source()
+    }
+
+    fn provide<'a>(&'a self, request: &mut std::error::Request<'a>) {}
+}
 
 pub struct Chunk {
     chunk_type: ChunkType,
     chunk_data: Vec<u8>,
-    // convertir length a [u8]
     length: u32,
     crc: u32,
 }
@@ -44,13 +61,13 @@ impl Chunk {
         self.crc
     }
 
-    pub fn data_as_string(&self) -> Result<String, ()> {
+    pub fn data_as_string(&self) -> Result<String> {
         let data = self.data().bytes();
         let mut string = String::new();
         for byte in data {
             let byte = match byte {
                 Ok(val) => val,
-                Err(_) => return Err(()),
+                Err(_) => return Err(),
             };
             string.push(byte as char);            
         }
@@ -58,9 +75,15 @@ impl Chunk {
     }
 
     pub fn as_bytes(&self) -> Vec<u8> {
-        let mut byte_vec = Vec::<u8>::new();
-        byte_vec.push(self.length as u8);
-        byte_vec.push(self.chunk_type.bytes()[..]);
+        let byte_vec = Vec::<u8>::new();
+        let byte_vec = byte_vec
+           .iter()
+           .cloned()
+           .chain(self.length.to_be_bytes())
+           .chain(self.chunk_type.bytes())
+           .chain(self.chunk_data.iter().cloned())
+           .chain(self.crc.to_be_bytes())
+           .collect();
         return byte_vec
     }
 
