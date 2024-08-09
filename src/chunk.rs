@@ -32,10 +32,7 @@ impl Chunk {
     const CRC: Crc<u32> = Crc::<u32>::new(&CRC_32_ISO_HDLC);
 
     pub fn new(chunk_type: ChunkType, chunk_data: Vec<u8>) -> Chunk {
-        let length: u32 = chunk_data.bytes()
-                                    .count()
-                                    .try_into()
-                                    .unwrap();
+        let length: u32 = chunk_data.bytes().count().try_into().unwrap();
         let crc_sum = Chunk::get_checksum(chunk_data.clone(), chunk_type.bytes());
         Chunk {
             chunk_type,
